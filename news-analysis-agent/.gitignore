@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.mypy_cache/
+.gradio/
+.env
+*.egg-info/
+test_tool.py
+generate_prompts.py
+prompts_old.yaml
