@@ -19,7 +19,7 @@ Runs fully locally: answer generation and embeddings are computed through [Ollam
 ### 1. Clone the repository and enter the project folder
 
 ```bash
-git clone <repository-link>
+git clone https://github.com/M4x4T/my_portfolio
 cd rag_chatbot
 ```
 
