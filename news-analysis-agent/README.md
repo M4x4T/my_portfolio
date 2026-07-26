@@ -58,8 +58,8 @@ Two separate models are used deliberately:
 
 **1. Clone and install dependencies**
 ```bash
-git clone <your-repo-url>
-cd First_agent_template
+git clone https://github.com/M4x4T/my_portfolio.git
+cd my_portfolio/news_analysis-agent
 pip install -r requirements.txt
 ```
 
