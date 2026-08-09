@@ -1,0 +1,17 @@
+INTERNAL PROCEDURE: New Employee Onboarding (Support Team)
+
+Week 1:
+- Set up access to internal admin panel, CRM, and ticketing system.
+- Shadow two senior support agents on live chat sessions.
+- Complete internal product training modules 1-3 (found on internal LMS).
+
+Week 2:
+- Begin handling tier-1 tickets under supervision.
+- Review internal escalation matrix: which issue types go to Tier 2, Engineering, or Billing.
+
+Internal Tools Access Required:
+- Admin panel (read-only initially, write access after 30 days)
+- Internal knowledge base (Confluence space "Support-Internal")
+- CRM system with customer history and internal risk flags
+
+Note: New agents should NOT have access to the fraud review queue or refund approval above $50 until 60-day review is complete.

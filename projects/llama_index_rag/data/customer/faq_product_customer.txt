@@ -1,0 +1,16 @@
+Frequently Asked Questions: Product Usage
+
+How do I reset my password?
+Go to the login page and click "Forgot Password." You'll receive a reset link by email within a few minutes.
+
+Is there a mobile app?
+Yes, our app is available on both iOS and Android. Search for our product name in the App Store or Google Play.
+
+How do I upgrade my plan?
+Visit Account Settings > Plan & Billing, then select "Upgrade" next to the plan you'd like to switch to. Changes take effect immediately.
+
+Can I use the product offline?
+Some features are available offline, but syncing requires an internet connection. Changes made offline will sync automatically once you're back online.
+
+Who do I contact for technical issues?
+You can reach our support team via the in-app chat or the Help Center contact form. For urgent issues, please include your account email and a description of the problem.

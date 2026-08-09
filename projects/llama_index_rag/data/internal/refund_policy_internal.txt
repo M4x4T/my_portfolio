@@ -1,0 +1,23 @@
+INTERNAL POLICY: Refund Processing Procedure
+
+This document is for internal staff only. Do not share with customers.
+
+Refund Approval Thresholds:
+- Refunds under $50: any support agent can approve directly in the system.
+- Refunds $50-$500: requires team lead approval via the internal ticketing system.
+- Refunds over $500: requires manager approval and finance sign-off within 2 business days.
+
+Internal Processing Steps:
+1. Verify the order in the internal admin panel (Orders > Search by Order ID).
+2. Check the refund reason code against the internal reason-code list (see Appendix A in the wiki).
+3. If the customer is flagged as "high-risk" in the CRM, escalate to the fraud review team before processing.
+4. Refunds are processed through the internal payment gateway dashboard, not the customer-facing site.
+5. Log the refund in the internal tracking sheet with agent ID and timestamp.
+
+Special Cases:
+- Subscription cancellations mid-cycle: prorate based on internal formula (days_used / days_in_cycle).
+- Refunds tied to a known bug (see internal bug tracker tag "refund-impact"): auto-approve regardless of amount, tag ticket "bug-refund".
+
+Escalation Contacts:
+- Finance sign-off: internal finance Slack channel #finance-refunds
+- Fraud review: fraud-team@internal (internal email alias, not public)
