@@ -1,4 +1,4 @@
-from rag_core.config import RERANKER_TOP_N, configure_llama_index, get_qdrant_client, COLLECTION_NAME, RERANKER_MODEL, RERANKER_TOP_N, SIMILARITY_TOP_K, SPARSE_TOP_K, ENABLE_HYBRID_SEARCH, SPARSE_MODEL
+from rag_core.config import RERANKER_TOP_N, configure_llama_index, get_qdrant_client, COLLECTION_NAME, RERANKER_MODEL, RERANKER_TOP_N, SIMILARITY_TOP_K, SPARSE_TOP_K, ENABLE_HYBRID_SEARCH, SPARSE_MODEL, RELEVANCE_THRESHOLD
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 from llama_index.core import VectorStoreIndex
 from llama_index.core.vector_stores import MetadataFilter, MetadataFilters, FilterOperator
@@ -59,10 +59,22 @@ def ask(question: str, user_role: AccessLevel) -> str:
     return str(response)
 
 
+def fallback_response() -> dict:
+    return {
+        "answer": "I don't have enough information to answer this question confidently.",
+        "sources": []
+    }
+
+
 def ask_with_sources(question: str, user_role: AccessLevel) -> dict:
     """Asks a question to the QueryEngine and returns the answer along with source information."""
     query_engine = build_query_engine(user_role)
     response = query_engine.query(question)
+    if response.source_nodes == []:
+        return fallback_response()
+    best_score = max(node_with_score.score for node_with_score in response.source_nodes)
+    if best_score < RELEVANCE_THRESHOLD:
+            return fallback_response()
     sources = []
     for node_with_score in response.source_nodes:
         sources.append({
@@ -72,15 +84,21 @@ def ask_with_sources(question: str, user_role: AccessLevel) -> dict:
             "access_level": node_with_score.node.metadata.get("access_level", "unknown"),
         })
     return {
-        "answer": str(response),
-        "sources": sources
+            "answer": str(response),
+            "sources": sources
     }
 
 
 if __name__ == "__main__":
     # Example usage
-    question = "Which tools for internal use are available?"
-    result = ask_with_sources(question, "internal")
-    print(f"Answer: {result['answer']}")
-    for source in result['sources']:
-        print(f"Source: {source['file_name']}, Score: {source['score']}")
+    
+    example_questions = ["Which tools for internal use are available?",
+                        "What is the capital of France?",
+                        "How do I reset my password?",
+                    ]
+    for question in example_questions:
+        response = ask_with_sources(question, "internal")
+        print(f"Question: {question}")
+        for source in response['sources']:
+            print(f"Source: {source['file_name']}, Score: {source['score']}")
+        print("\n")

@@ -16,6 +16,7 @@ LLM_MODEL = "qwen2:7b"
 EMBED_MODEL = "nomic-embed-text"
 SPARSE_MODEL = "Qdrant/bm25"
 RERANKER_MODEL = "cross-encoder/ms-marco-TinyBERT-L-2-v2"
+RELEVANCE_THRESHOLD = -8
 
 
 

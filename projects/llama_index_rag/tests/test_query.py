@@ -14,3 +14,10 @@ def test_internal_can_receive_internal_nodes():
 def test_invalid_role_raises_error():
     with pytest.raises(ValueError, match="Invalid user role"):
         ask_with_sources("Which tools for internal use are available?", "hacker")
+
+
+
+def test_fallback_for_irrelevant_question():
+    response = ask_with_sources("What is the colour of the sky on Mars?", "internal")
+    assert response["answer"] == "I don't have enough information to answer this question confidently."
+    assert len(response["sources"]) == 0
