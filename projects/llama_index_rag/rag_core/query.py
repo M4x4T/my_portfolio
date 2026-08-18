@@ -1,4 +1,5 @@
 from rag_core.config import RERANKER_TOP_N, configure_llama_index, get_qdrant_client, COLLECTION_NAME, RERANKER_MODEL, RERANKER_TOP_N, SIMILARITY_TOP_K, SPARSE_TOP_K, ENABLE_HYBRID_SEARCH, SPARSE_MODEL, RELEVANCE_THRESHOLD
+from rag_core.models import SourceInfo, QueryResult
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 from llama_index.core import VectorStoreIndex
 from llama_index.core.vector_stores import MetadataFilter, MetadataFilters, FilterOperator
@@ -59,14 +60,16 @@ def ask(question: str, user_role: AccessLevel) -> str:
     return str(response)
 
 
-def fallback_response() -> dict:
-    return {
-        "answer": "I don't have enough information to answer this question confidently.",
-        "sources": []
-    }
+def fallback_response() -> QueryResult:
+    return QueryResult(
+        answer = "I don't have enough information to answer this question confidently.",
+        sources = [],
+        escalate = True
+    )
+        
 
 
-def ask_with_sources(question: str, user_role: AccessLevel) -> dict:
+def ask_with_sources(question: str, user_role: AccessLevel) -> QueryResult:
     """Asks a question to the QueryEngine and returns the answer along with source information."""
     query_engine = build_query_engine(user_role)
     response = query_engine.query(question)
@@ -77,17 +80,17 @@ def ask_with_sources(question: str, user_role: AccessLevel) -> dict:
             return fallback_response()
     sources = []
     for node_with_score in response.source_nodes:
-        sources.append({
-            "file_name": node_with_score.node.metadata.get("file_name", "unknown"),
-            "score": node_with_score.score,
-            "snippet": node_with_score.node.get_text()[:150],
-            "access_level": node_with_score.node.metadata.get("access_level", "unknown"),
-        })
-    return {
-            "answer": str(response),
-            "sources": sources
-    }
-
+        sources.append(SourceInfo(
+            file_name=node_with_score.node.metadata.get("file_name", "Unknown"),
+            score=node_with_score.score,
+            snippet=node_with_score.node.get_text()[:150],
+            access_level=node_with_score.node.metadata.get("access_level", "Unknown")
+        ))
+    return QueryResult(
+        answer=str(response),
+        sources=sources,
+        escalate=False
+    )
 
 if __name__ == "__main__":
     # Example usage
@@ -99,6 +102,6 @@ if __name__ == "__main__":
     for question in example_questions:
         response = ask_with_sources(question, "internal")
         print(f"Question: {question}")
-        for source in response['sources']:
-            print(f"Source: {source['file_name']}, Score: {source['score']}")
+        for source in response.sources:
+            print(f"Source: {source.file_name}, Score: {source.score}")
         print("\n")
