@@ -27,54 +27,31 @@ The system is split into two independent pipelines, following the standard RAG p
 
 ### Indexing pipeline (`rag_core/ingestion.py`)
 
-```
-Documents (.txt, extensible to PDF/DOCX)
-        │
-        ▼
-SimpleDirectoryReader   →  loads files, tags each Document with
-                            metadata["access_level"] = "internal" | "customer"
-        │
-        ▼
-SentenceSplitter        →  chunks documents into Nodes (chunk_size=512,
-                            overlap=50), metadata is inherited by every Node
-        │
-        ▼
-Embedding (dense)       →  nomic-embed-text via Ollama
-Embedding (sparse)      →  Qdrant/bm25 via fastembed
-        │
-        ▼
-Qdrant                  →  single collection, dual dense+sparse vectors per Node
+```mermaid
+flowchart TD
+    A["Documents<br/>(.txt, extensible to PDF/DOCX)"] --> B["SimpleDirectoryReader<br/>loads files, tags each Document<br/>with metadata['access_level'] = internal | customer"]
+    B --> C["SentenceSplitter<br/>chunk_size=512, overlap=50<br/>metadata inherited by every Node"]
+    C --> D["Dense embedding<br/>nomic-embed-text via Ollama"]
+    C --> E["Sparse embedding<br/>Qdrant/bm25 via fastembed"]
+    D --> F[("Qdrant<br/>single collection,<br/>dense + sparse vectors per Node")]
+    E --> F
 ```
 
 ### Query pipeline (`rag_core/query.py`)
 
+```mermaid
+flowchart TD
+    A["User question + user_role<br/>(internal | customer)"] --> B["MetadataFilter (IN)<br/>internal → [internal, customer]<br/>customer → [customer]<br/>applied server-side in Qdrant"]
+    B --> C["Hybrid retrieval<br/>dense + sparse candidates<br/>fused by Qdrant"]
+    C --> D["Cross-encoder reranking<br/>ms-marco-TinyBERT-L-2-v2"]
+    D --> E{"Confidence check<br/>no nodes, or best score<br/>below threshold?"}
+    E -- yes --> F["Fallback response<br/>escalate = true<br/>LLM is never called"]
+    E -- no --> G["LLM response synthesis<br/>qwen2:7b via Ollama<br/>grounded in retrieved Nodes"]
+    G --> H["QueryResult (Pydantic)<br/>answer, sources[], escalate = false"]
+    F --> I["QueryResult (Pydantic)<br/>answer, sources = [], escalate = true"]
 ```
-User question + user_role ("internal" | "customer")
-        │
-        ▼
-MetadataFilter (IN)     →  internal → ["internal", "customer"]
-                            customer → ["customer"]
-                            (applied server-side in Qdrant, not post-filtered
-                             in Python — customer requests never receive
-                             internal payloads over the wire)
-        │
-        ▼
-Hybrid retrieval        →  dense + sparse candidates fused by Qdrant
-        │
-        ▼
-Cross-encoder reranking →  cross-encoder/ms-marco-TinyBERT-L-2-v2
-        │
-        ▼
-Confidence check        →  if no nodes, or best reranker score < threshold:
-                            → return fallback (escalate=True), LLM is
-                              never called
-        │
-        ▼
-LLM response synthesis  →  qwen2:7b via Ollama, grounded in retrieved Nodes
-        │
-        ▼
-QueryResult (Pydantic)  →  { answer, sources[], escalate }
-```
+
+Note: role-based filtering is enforced **server-side in Qdrant**, not post-filtered in Python — a customer request never receives internal-tagged payloads over the wire in the first place.
 
 A FastAPI layer (`backend/`) wraps this core with `POST /query`, `GET /health`, and a `POST /ingest` admin stub, using the same Pydantic models as the response contract — so the OpenAPI/Swagger schema is generated directly from the RAG core's own types.
 
